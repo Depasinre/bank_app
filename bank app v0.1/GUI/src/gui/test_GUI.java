@@ -8,6 +8,27 @@ package gui;
  *
  * @author Depasinre
  */
+import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.LineBorder;
+
+import java.awt.*;
+import java.awt.event.*;
+import java.sql.*;
+import java.util.ArrayList;
+
+import java.util.Scanner;
+import java.io.File;
+import java.io.FileWriter; 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files; 
+import java.nio.file.Path; 
+import java.nio.file.Paths; 
+import java.util.List;
+import java.time.format.DateTimeFormatter;
+import java.time.LocalDateTime; 
+
 public class test_GUI extends javax.swing.JFrame {
 
     /**
@@ -30,6 +51,7 @@ public class test_GUI extends javax.swing.JFrame {
         username_panel = new javax.swing.JPanel();
         username_lable = new javax.swing.JLabel();
         username_input = new javax.swing.JTextField();
+        username_button = new javax.swing.JButton();
         display_panel = new javax.swing.JPanel();
         balance_lable = new javax.swing.JLabel();
         dollarsign = new javax.swing.JLabel();
@@ -47,17 +69,36 @@ public class test_GUI extends javax.swing.JFrame {
         action_button = new javax.swing.JButton();
         logs_panel = new javax.swing.JPanel();
         logs_lable = new javax.swing.JLabel();
-        logs_output = new javax.swing.JScrollPane();
-        logs_table = new javax.swing.JTable();
+        logs_sc_pane = new javax.swing.JScrollPane();
+        logs_output = new javax.swing.JTextArea();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        username_lable.setText("username:");
+        username_lable.setFont(new java.awt.Font("Times New Roman", 0, 12)); // NOI18N
+        username_lable.setText("Username:");
 
-        username_input.setText("Enter username");
+        username_input.setFont(new java.awt.Font("Times New Roman", 0, 12)); // NOI18N
+        username_input.setForeground(java.awt.Color.gray);
+        username_input.setText("Enter Username");
+        username_input.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                username_inputFocusGained(evt);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                username_inputFocusLost(evt);
+            }
+        });
         username_input.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 username_inputActionPerformed(evt);
+            }
+        });
+
+        username_button.setFont(new java.awt.Font("Times New Roman", 0, 12)); // NOI18N
+        username_button.setText("submit");
+        username_button.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                username_buttonActionPerformed(evt);
             }
         });
 
@@ -69,22 +110,28 @@ public class test_GUI extends javax.swing.JFrame {
                 .addComponent(username_lable)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(username_input, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(36, 36, 36)
+                .addComponent(username_button)
                 .addGap(0, 0, Short.MAX_VALUE))
         );
         username_panelLayout.setVerticalGroup(
             username_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, username_panelLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap(11, Short.MAX_VALUE)
                 .addGroup(username_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(username_lable)
-                    .addComponent(username_input, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(username_input, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(username_button))
                 .addContainerGap())
         );
 
+        balance_lable.setFont(new java.awt.Font("Times New Roman", 0, 12)); // NOI18N
         balance_lable.setText("Current Balance: ");
 
+        dollarsign.setFont(new java.awt.Font("Times New Roman", 0, 23)); // NOI18N
         dollarsign.setText("$");
 
+        balance_number.setFont(new java.awt.Font("Times New Roman", 0, 36)); // NOI18N
         balance_number.setText("0000.00");
 
         javax.swing.GroupLayout display_panelLayout = new javax.swing.GroupLayout(display_panel);
@@ -97,7 +144,7 @@ public class test_GUI extends javax.swing.JFrame {
                 .addComponent(dollarsign)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(balance_number)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(294, Short.MAX_VALUE))
         );
         display_panelLayout.setVerticalGroup(
             display_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -105,14 +152,30 @@ public class test_GUI extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(display_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(balance_lable, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(dollarsign, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(balance_number))
+                    .addComponent(balance_number)
+                    .addComponent(dollarsign, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        goal_lable.setFont(new java.awt.Font("Times New Roman", 0, 12)); // NOI18N
         goal_lable.setText("Goal: ");
 
-        goal_input.setText("setting your goal");
+        goal_input.setFont(new java.awt.Font("Times New Roman", 0, 12)); // NOI18N
+        goal_input.setForeground(java.awt.Color.gray);
+        goal_input.setText("Setting your goal");
+        goal_input.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                goal_inputFocusGained(evt);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                goal_inputFocusLost(evt);
+            }
+        });
+        goal_input.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                goal_inputActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout goal_panelLayout = new javax.swing.GroupLayout(goal_panel);
         goal_panel.setLayout(goal_panelLayout);
@@ -122,7 +185,7 @@ public class test_GUI extends javax.swing.JFrame {
                 .addComponent(goal_lable)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(goal_input, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 319, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         goal_panelLayout.setVerticalGroup(
             goal_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -134,9 +197,25 @@ public class test_GUI extends javax.swing.JFrame {
                 .addContainerGap(23, Short.MAX_VALUE))
         );
 
+        deposit_lable.setFont(new java.awt.Font("Times New Roman", 0, 12)); // NOI18N
         deposit_lable.setText("Deposits");
 
+        deposit_input.setFont(new java.awt.Font("Times New Roman", 0, 12)); // NOI18N
+        deposit_input.setForeground(java.awt.Color.gray);
         deposit_input.setText("Enter the number");
+        deposit_input.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                deposit_inputFocusGained(evt);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                deposit_inputFocusLost(evt);
+            }
+        });
+        deposit_input.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                deposit_inputActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout deposit_panelLayout = new javax.swing.GroupLayout(deposit_panel);
         deposit_panel.setLayout(deposit_panelLayout);
@@ -148,9 +227,9 @@ public class test_GUI extends javax.swing.JFrame {
                         .addGap(73, 73, 73)
                         .addComponent(deposit_lable))
                     .addGroup(deposit_panelLayout.createSequentialGroup()
-                        .addGap(45, 45, 45)
+                        .addGap(48, 48, 48)
                         .addComponent(deposit_input, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(52, Short.MAX_VALUE))
+                .addContainerGap(49, Short.MAX_VALUE))
         );
         deposit_panelLayout.setVerticalGroup(
             deposit_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -162,9 +241,20 @@ public class test_GUI extends javax.swing.JFrame {
                 .addContainerGap(37, Short.MAX_VALUE))
         );
 
+        withdraw_lable.setFont(new java.awt.Font("Times New Roman", 0, 12)); // NOI18N
         withdraw_lable.setText("Withdraw");
 
+        withdraw_input.setFont(new java.awt.Font("Times New Roman", 0, 12)); // NOI18N
+        withdraw_input.setForeground(java.awt.Color.gray);
         withdraw_input.setText("Enter the number");
+        withdraw_input.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                withdraw_inputFocusGained(evt);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                withdraw_inputFocusLost(evt);
+            }
+        });
         withdraw_input.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 withdraw_inputActionPerformed(evt);
@@ -176,13 +266,13 @@ public class test_GUI extends javax.swing.JFrame {
         withdraw_panelLayout.setHorizontalGroup(
             withdraw_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(withdraw_panelLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(41, 41, 41)
                 .addComponent(withdraw_lable)
-                .addGap(63, 63, 63))
-            .addGroup(withdraw_panelLayout.createSequentialGroup()
-                .addGap(38, 38, 38)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, withdraw_panelLayout.createSequentialGroup()
+                .addContainerGap(26, Short.MAX_VALUE)
                 .addComponent(withdraw_input, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(40, Short.MAX_VALUE))
+                .addGap(22, 22, 22))
         );
         withdraw_panelLayout.setVerticalGroup(
             withdraw_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -194,7 +284,13 @@ public class test_GUI extends javax.swing.JFrame {
                 .addContainerGap(37, Short.MAX_VALUE))
         );
 
+        action_button.setFont(new java.awt.Font("Times New Roman", 0, 12)); // NOI18N
         action_button.setText("confirm");
+        action_button.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                action_buttonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout action_panelLayout = new javax.swing.GroupLayout(action_panel);
         action_panel.setLayout(action_panelLayout);
@@ -224,20 +320,13 @@ public class test_GUI extends javax.swing.JFrame {
                 .addContainerGap(15, Short.MAX_VALUE))
         );
 
-        logs_lable.setText("logs：");
+        logs_lable.setFont(new java.awt.Font("Times New Roman", 0, 12)); // NOI18N
+        logs_lable.setText("Logs:");
 
-        logs_table.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
-            new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
-            }
-        ));
-        logs_output.setViewportView(logs_table);
+        logs_output.setColumns(20);
+        logs_output.setFont(new java.awt.Font("Times New Roman", 0, 18)); // NOI18N
+        logs_output.setRows(5);
+        logs_sc_pane.setViewportView(logs_output);
 
         javax.swing.GroupLayout logs_panelLayout = new javax.swing.GroupLayout(logs_panel);
         logs_panel.setLayout(logs_panelLayout);
@@ -246,9 +335,9 @@ public class test_GUI extends javax.swing.JFrame {
             .addGroup(logs_panelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(logs_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(logs_output, javax.swing.GroupLayout.PREFERRED_SIZE, 487, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(logs_sc_pane, javax.swing.GroupLayout.PREFERRED_SIZE, 480, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(logs_lable))
-                .addContainerGap(23, Short.MAX_VALUE))
+                .addContainerGap(18, Short.MAX_VALUE))
         );
         logs_panelLayout.setVerticalGroup(
             logs_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -256,8 +345,8 @@ public class test_GUI extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(logs_lable)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(logs_output, javax.swing.GroupLayout.PREFERRED_SIZE, 156, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(24, Short.MAX_VALUE))
+                .addComponent(logs_sc_pane, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(18, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -266,7 +355,7 @@ public class test_GUI extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(action_panel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 13, Short.MAX_VALUE))
+                .addGap(0, 0, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -292,7 +381,7 @@ public class test_GUI extends javax.swing.JFrame {
                 .addComponent(action_panel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(logs_panel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(39, Short.MAX_VALUE))
+                .addContainerGap(32, Short.MAX_VALUE))
         );
 
         pack();
@@ -306,10 +395,233 @@ public class test_GUI extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_withdraw_inputActionPerformed
 
+    private void username_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_username_buttonActionPerformed
+        // TODO add your handling code here:
+        logs_output.setText("");
+            
+    	    String goal_text = goal_input.getText();
+            String username_text = username_input.getText();
+
+            int goal_num = 0;
+            if (goal_text.equals("Setting your goal")){
+              goal_num = 0;
+            } else {
+              try {
+            	  goal_num = Integer.parseInt(goal_text);
+              } catch (NumberFormatException e1) {
+            	  goal_num = 0;
+              }
+            }
+
+            if (username_text.equals("Enter Username") || username_text.equals("")){
+              System.out.print("bad username");
+            } else {
+            
+	            username_text = username_text.replaceAll(" ", "_");
+	        	  readData(username_text, goal_num, logs_output);
+            }
+           balance_number.setText(""+balance);
+           balance_number.revalidate();
+    }//GEN-LAST:event_username_buttonActionPerformed
+
+    private void action_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_action_buttonActionPerformed
+        // TODO add your handling code here:\
+        int deposit = 0;
+        int withdraw = 0;
+        
+        try {
+              deposit = Integer.parseInt(deposit_input.getText());
+            } catch (NumberFormatException e1) {
+            }
+            try {
+              withdraw = Integer.parseInt(withdraw_input.getText());
+            } catch (NumberFormatException e1) {
+            }
+            String old_balance = Integer.toString(balance);
+            balance = balance + deposit - withdraw;
+            balance_number.setText(""+balance);
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+            LocalDateTime now = LocalDateTime.now();
+            String time = dtf.format(now);
+            
+            logs_output.setText(logs_output.getText()+ time + "\n");
+            logs_output.setText(logs_output.getText() + "Deposit amount is " + deposit + "\n");
+            logs_output.setText(logs_output.getText() + "Withdraw amount is " + withdraw + "\n");
+            logs_output.revalidate();
+            try{
+              String filename = username_input.getText() + "_data.txt";
+              File file = new File(filename);
+              Scanner sc = new Scanner(file);
+              //instantiating the StringBuffer class
+              StringBuffer buffer = new StringBuffer();
+              //Reading lines of the file and appending them to StringBuffer
+              while (sc.hasNextLine()) {
+                buffer.append(sc.nextLine()+System.lineSeparator());
+              }
+              String fileContents = buffer.toString();
+              System.out.println("Contents of the file: "+fileContents);
+              sc.close();
+              String new_balance = Integer.toString(balance);
+              int first_one = fileContents.indexOf(System.lineSeparator());
+              int second_one = fileContents.indexOf(System.lineSeparator(),first_one+1);
+              int third_one = fileContents.indexOf(System.lineSeparator(),second_one+1);
+              fileContents = fileContents.substring(0, second_one+1) + new_balance + fileContents.substring(third_one);
+              FileWriter writer = new FileWriter(filename);
+              writer.append(fileContents);
+              writer.append(deposit + "," + withdraw + "," + time + System.getProperty("line.separator"));
+              writer.flush();              
+              writer.close();
+            }catch(IOException e2){
+                
+            }
+    }//GEN-LAST:event_action_buttonActionPerformed
+
+    private void goal_inputActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_goal_inputActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_goal_inputActionPerformed
+
+    private void username_inputFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_username_inputFocusGained
+        // TODO add your handling code here:
+        if (username_input.getText().equals("Enter Username")) {
+                username_input.setText("");
+                username_input.setForeground(Color.BLACK);
+            }
+    }//GEN-LAST:event_username_inputFocusGained
+
+    private void username_inputFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_username_inputFocusLost
+        // TODO add your handling code here:
+        if (username_input.getText().isEmpty()) {
+                username_input.setForeground(Color.GRAY);
+                username_input.setText("Enter Username");
+            }
+    }//GEN-LAST:event_username_inputFocusLost
+
+    private void goal_inputFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_goal_inputFocusGained
+        // TODO add your handling code here:
+         if (goal_input.getText().equals("Setting your goal")) {
+                goal_input.setText("");
+                goal_input.setForeground(Color.BLACK);
+            }
+    }//GEN-LAST:event_goal_inputFocusGained
+
+    private void goal_inputFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_goal_inputFocusLost
+        // TODO add your handling code here:
+        if (goal_input.getText().isEmpty()) {
+                goal_input.setForeground(Color.GRAY);
+                goal_input.setText("Enter Goal");
+            }
+    }//GEN-LAST:event_goal_inputFocusLost
+
+    private void deposit_inputFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_deposit_inputFocusGained
+        // TODO add your handling code here:
+        if (deposit_input.getText().equals("Enter the number")) {
+            	  deposit_input.setText("");
+            	  deposit_input.setForeground(Color.BLACK);
+              }
+    }//GEN-LAST:event_deposit_inputFocusGained
+
+    private void deposit_inputFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_deposit_inputFocusLost
+        // TODO add your handling code here:
+        if (deposit_input.getText().isEmpty()) {
+            	  deposit_input.setForeground(Color.GRAY);
+            	  deposit_input.setText("Enter the number");
+              }
+    }//GEN-LAST:event_deposit_inputFocusLost
+
+    private void withdraw_inputFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_withdraw_inputFocusGained
+        // TODO add your handling code here:
+        if (withdraw_input.getText().equals("Enter the number")) {
+            	  withdraw_input.setText("");
+            	  withdraw_input.setForeground(Color.BLACK);
+              }
+    }//GEN-LAST:event_withdraw_inputFocusGained
+
+    private void withdraw_inputFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_withdraw_inputFocusLost
+        // TODO add your handling code here:
+        if (withdraw_input.getText().isEmpty()) {
+            	  withdraw_input.setForeground(Color.GRAY);
+            	  withdraw_input.setText("Enter the number");
+              }
+    }//GEN-LAST:event_withdraw_inputFocusLost
+
+    private void deposit_inputActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deposit_inputActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_deposit_inputActionPerformed
+public static void readData(String username, int goal, JTextArea transactions) {
+    try {
+      String filename = username + "_data.txt";
+      File file = new File(filename);
+       if (file.exists()) {
+            Scanner sc = new Scanner(file);
+            //instantiating the StringBuffer class
+            StringBuffer buffer = new StringBuffer();
+            //Reading lines of the file and appending them to StringBuffer
+            while (sc.hasNextLine()) {
+              buffer.append(sc.nextLine()+System.lineSeparator());
+            }
+            String fileContents = buffer.toString();
+            System.out.println("Contents of the file: "+fileContents);
+            sc.close();
+            String new_balance = Integer.toString(balance);
+            int first_one = fileContents.indexOf(System.lineSeparator());
+            int second_one = fileContents.indexOf(System.lineSeparator(),first_one+1);
+            fileContents = fileContents.substring(0,first_one+1) + Integer.toString(goal) + fileContents.substring(second_one);
+            FileWriter writer = new FileWriter(filename);
+            writer.append(fileContents);
+            writer.flush();              
+            writer.close();
+      } else {
+        file.createNewFile();
+        FileWriter writer = new FileWriter(filename);
+        writer.write(username + System.getProperty("line.separator"));
+        writer.write(goal + System.getProperty("line.separator"));
+        writer.write("0" + System.getProperty("line.separator"));
+        writer.close();
+      }
+      
+      Statement(filename, transactions);
+
+    } catch(Exception e) {
+      e.printStackTrace();
+    }
+  }
+public static void Statement(String filename, JTextArea transactions) {
+   try {
+     File file = new File(filename);
+     Scanner sc = new Scanner(file);
+     for (int i = 0; i < 3; i++) { // goes to 4th line
+    	 
+    	 if (i==2 && sc.hasNextLine()) {
+    		  String input = sc.nextLine();
+    	    balance = Integer.parseInt(input);
+    	 } else if (i==2 && !sc.hasNextLine()) {
+          balance = 0;
+        } else if (sc.hasNextLine()) {
+     	   String input = sc.nextLine();
+     	 }
+     }
+     while (sc.hasNextLine()) {
+       String line = sc.nextLine();
+       String parsed[] = line.split(","); // 0=deposit, 1=withdraw,
+        transactions.setText(transactions.getText()+parsed[2]+"\n");
+       transactions.setText(transactions.getText() + "Deposit amount is " + parsed[0] + "\n");
+       transactions.setText(transactions.getText() + "Withdraw amount is " + parsed[1] + "\n");
+       transactions.revalidate();
+     }
+   }
+   catch(Exception e) {
+     e.printStackTrace();
+   }
+  }
+
+public void windowClosing(WindowEvent e) {
+    System.exit(0);
+  }
+
     /**
      * @param args the command line arguments
      */
-
+    public static int balance = 0;
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
@@ -356,9 +668,10 @@ public class test_GUI extends javax.swing.JFrame {
     private javax.swing.JLabel goal_lable;
     private javax.swing.JPanel goal_panel;
     private javax.swing.JLabel logs_lable;
-    private javax.swing.JScrollPane logs_output;
+    private javax.swing.JTextArea logs_output;
     private javax.swing.JPanel logs_panel;
-    private javax.swing.JTable logs_table;
+    private javax.swing.JScrollPane logs_sc_pane;
+    private javax.swing.JButton username_button;
     private javax.swing.JTextField username_input;
     private javax.swing.JLabel username_lable;
     private javax.swing.JPanel username_panel;
